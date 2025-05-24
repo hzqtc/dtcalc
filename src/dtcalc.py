@@ -154,6 +154,13 @@ def print_error(result):
   print(f"{Fore.RED}! {Style.RESET_ALL}{result}")
 
 
+def format_datetime(dt: datetime) -> str:
+  if dt.hour == 0 and dt.minute == 0 and dt.second == 0:
+    return dt.strftime("%Y-%m-%d")
+  else:
+    return dt.strftime("%Y-%m-%d %H:%M:%S")
+
+
 def format_timedelta(td: timedelta) -> str:
   days = td.days
   total_seconds = int(td.total_seconds())
@@ -184,7 +191,7 @@ def main():
       answer = evaluate_expression(user_input)
       # answer maybe one of timedelta (dur +/- dur, dt - dt) or datetime (dt +/- dur)
       if isinstance(answer, datetime):
-        print_result(answer.strftime("%Y-%m-%d %H:%M:%S"))
+        print_result(format_datetime(answer))
       elif isinstance(answer, timedelta):
         print_result(format_timedelta(answer))
     except (EOFError, KeyboardInterrupt):
