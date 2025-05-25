@@ -53,8 +53,8 @@ def parse_duration(s: str) -> timedelta:
     "seconds": "seconds",
   }
 
-  # Parse tokens like "2years", "3days", etc.
-  pattern = r"(\d+)([a-zA-Z]+)"
+  # Parse tokens like "2years", "3 days", "3w4d", etc.
+  pattern = r"(\d+)\s*([a-zA-Z]+)"
   matches = re.findall(pattern, s, re.IGNORECASE)
   if not matches:
     return None

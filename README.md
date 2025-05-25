@@ -37,7 +37,7 @@ uv sync
 
 ### 3. Run
 ```bash
-uv run dtcalc.py
+uv run src/dtcalc.py
 ```
 
 ## 🧪 Examples
@@ -47,12 +47,12 @@ uv run dtcalc.py
 = 2025-05-06
 
 >>> 2024-07-10 - 2023-07-10
-= 366 days, 0 hours, 0 minutes
+= 366 days
 
->>> 2024-01-01 + 2years3days
-= 2026-01-04
+>>> 11days + 2weeks3days
+= 28 days
 
 >>> 06/10/24 15:33 + 10d5h
-= 2024-06-20 20:33
+= 2024-06-20 20:33:00
 ```
 
