@@ -10,12 +10,21 @@ init(autoreset=True)
 # -----------------------
 # Persistent History Setup
 # -----------------------
+readline.set_history_length(1000)
 HISTORY_FILE = os.path.expanduser("~/.dtcalc_history")
 try:
   readline.read_history_file(HISTORY_FILE)
 except FileNotFoundError:
   pass
 atexit.register(readline.write_history_file, HISTORY_FILE)
+
+
+# -----------------------
+# Util methods
+# -----------------------
+def check_condition(condition, message):
+  if not condition:
+    raise ValueError(message)
 
 
 # -----------------------
@@ -54,11 +63,10 @@ def parse_duration(s: str) -> timedelta:
 
   for value, unit in matches:
     unit_key = unit_map.get(unit.lower())
-    if not unit_key:
-      raise ValueError(f"Unsupported duration unit: {unit}")
+    check_condition(unit_key, f"Unsupported duration unit: {unit}")
     val = int(value)
+    # Expand weeks to days
     if unit_key == "days" and unit.lower().startswith("w"):
-      # Expand weekds to days
       val *= 7
     kwargs[unit_key] += val
 
@@ -92,16 +100,15 @@ def parse_datetime_safe(s: str) -> datetime:
         return datetime.strptime(s, fmt)
       except ValueError:
         continue
-  raise ValueError(f"Invalid date: {s}")
+  return None
 
 
 # -----------------------
 # Expression Evaluation
 # -----------------------
-def evaluate_expression(expr: str):
-  tokens = re.split(r"\s+([+-])\s+", expr.strip())
-  if not tokens or len(tokens) < 3:
-    raise ValueError("Invalid expression.")
+def evaluate_expression(expr: str) -> datetime | timedelta:
+  tokens = [s.strip() for s in re.split(r"\s+([+-])", expr) if s.strip()]
+  check_condition(len(tokens) >= 3, "Invalid expression.")
 
   result = None
   op = None
@@ -116,41 +123,42 @@ def evaluate_expression(expr: str):
       if result is None:
         result = dur
       else:
-        return result + dur if op == "+" else result - dur
+        check_condition(op, f"Missing operator")
+        result = result + dur if op == "+" else result - dur
+        op = None
       continue
 
     dt = parse_datetime_safe(token)
-    if dt:
-      if result is None:
-        result = dt
-      else:
-        if isinstance(result, datetime):
-          if op == "-":
-            return result - dt
-          else:
-            raise ValueError("Cannot add two dates.")
-        elif isinstance(result, timedelta):
-          if op == "+":
-            return result + dt
-          else:
-            raise ValueError("Cannot subtract date from duration.")
-      continue
+    check_condition(dt, f"Could not parse token: '{token}'")
+    if result is None:
+      result = dt
+    else:
+      check_condition(op, f"Missing operator")
+      if isinstance(result, datetime):
+        check_condition(op == "-", "Cannot add two dates.")
+        result = result - dt
+      elif isinstance(result, timedelta):
+        check_condition(op == "+", "Cannot subtract date from duration.")
+        result = result + dt
+      op = None
+    continue
 
-    raise ValueError(f"Could not parse token: '{token}'")
+  check_condition(op == None, "Last token can not be an operator")
+  return result
 
 
 # -----------------------
 # Main Loop
 # -----------------------
-def get_prompt():
+def get_prompt() -> None:
   return f"{Fore.LIGHTBLUE_EX}>>> {Style.RESET_ALL}"
 
 
-def print_result(result):
+def print_result(result) -> str:
   print(f"{Fore.LIGHTBLUE_EX}= {Style.RESET_ALL}{result}")
 
 
-def print_error(result):
+def print_error(result) -> str:
   print(f"{Fore.RED}! {Style.RESET_ALL}{result}")
 
 
@@ -186,6 +194,15 @@ def main():
     try:
       user_input = input(get_prompt()).strip()
       if not user_input:
+        continue
+      elif user_input == "help":
+        print(
+          "Usage: [operand] [operator] [operand] ([operator] [operand])...\n"
+          "    [operand]: datetime | duration\n"
+          "    [operator]: + | -\n"
+          "    [datetime]: YYYY-MM-DD (HH:MM:SS)\n"
+          "    [duration]: 1w2d3h4m5s"
+        )
         continue
 
       answer = evaluate_expression(user_input)
