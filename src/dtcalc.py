@@ -1,3 +1,5 @@
+#!/opt/homebrew/bin/python3
+
 import re
 import os
 import readline
@@ -79,6 +81,11 @@ def parse_duration(s: str) -> timedelta:
 # Datetime Parsing
 # -----------------------
 def parse_datetime_safe(s: str) -> datetime:
+  if s.lower() == "today":
+    return datetime.today().replace(hour=0, minute=0, second=0, microsecond=0)
+  elif s.lower() == "now":
+    return datetime.now()
+
   date_formats = [
     "%Y-%m-%d",
     "%B/%d/%Y",
@@ -110,13 +117,14 @@ def parse_datetime_safe(s: str) -> datetime:
 # -----------------------
 def evaluate_expression(expr: str) -> datetime | timedelta:
   tokens = [s.strip() for s in re.split(r"\s+([+-])", expr) if s.strip()]
-  check_condition(len(tokens) >= 3, "Invalid expression.")
 
   result = None
   op = None
 
   for token in tokens:
     if token in ("+", "-"):
+      # Consectuive operators are not allowed
+      check_condition(op == None, f"Expecting an operand after operator '{op}'")
       op = token
       continue
 
@@ -146,6 +154,7 @@ def evaluate_expression(expr: str) -> datetime | timedelta:
     continue
 
   check_condition(op == None, "Last token can not be an operator")
+  check_condition(result, "No operands found")
   return result
 
 
@@ -153,7 +162,7 @@ def evaluate_expression(expr: str) -> datetime | timedelta:
 # Main Loop
 # -----------------------
 def get_prompt() -> None:
-  return f"{LIGHTBLUE}>>> {RESET}"
+  return f"{LIGHTBLUE}> {RESET}"
 
 
 def print_result(result) -> str:
