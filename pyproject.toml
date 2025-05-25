@@ -4,9 +4,7 @@ version = "0.1.0"
 description = "Command line calculator for dates, times and durations"
 readme = "README.md"
 requires-python = ">=3.13"
-dependencies = [
-  "colorama",
-]
+dependencies = []
 
 [tool.ruff]
 indent-width = 2

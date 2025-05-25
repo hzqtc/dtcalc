@@ -15,9 +15,6 @@ wheels = [
 name = "dtcalc"
 version = "0.1.0"
 source = { virtual = "." }
-dependencies = [
-    { name = "colorama" },
-]
 
 [package.dev-dependencies]
 dev = [
@@ -25,7 +22,6 @@ dev = [
 ]
 
 [package.metadata]
-requires-dist = [{ name = "colorama" }]
 
 [package.metadata.requires-dev]
 dev = [{ name = "pytest" }]

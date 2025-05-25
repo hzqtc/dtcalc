@@ -3,9 +3,11 @@ import os
 import readline
 import atexit
 from datetime import datetime, timedelta
-from colorama import Fore, Style, init
 
-init(autoreset=True)
+RESET = "\033[0m"
+LIGHTBLUE = "\033[94m"
+RED = "\033[91m"
+GREEN = "\033[92m"
 
 # -----------------------
 # Persistent History Setup
@@ -151,15 +153,15 @@ def evaluate_expression(expr: str) -> datetime | timedelta:
 # Main Loop
 # -----------------------
 def get_prompt() -> None:
-  return f"{Fore.LIGHTBLUE_EX}>>> {Style.RESET_ALL}"
+  return f"{LIGHTBLUE}>>> {RESET}"
 
 
 def print_result(result) -> str:
-  print(f"{Fore.LIGHTBLUE_EX}= {Style.RESET_ALL}{result}")
+  print(f"{LIGHTBLUE}= {RESET}{result}")
 
 
 def print_error(result) -> str:
-  print(f"{Fore.RED}! {Style.RESET_ALL}{result}")
+  print(f"{RED}! {RESET}{result}")
 
 
 def format_datetime(dt: datetime) -> str:
