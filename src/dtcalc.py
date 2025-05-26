@@ -13,8 +13,26 @@ RED = "\033[91m"
 GREEN = "\033[92m"
 
 # -----------------------
-# Persistent History Setup
+# Readline setup
 # -----------------------
+SUGGESTIONS = ["today", "now", "help"]
+
+
+def completer(text, state):
+  options = [s for s in SUGGESTIONS if s.startswith(text)]
+  if state < len(options):
+    return options[state]
+  return None
+
+
+readline.set_completer(completer)
+if "libedit" in readline.__doc__:
+  # macOS libedit
+  readline.parse_and_bind("bind ^I rl_complete")
+else:
+  # GNU readline
+  readline.parse_and_bind("tab: complete")
+
 readline.set_history_length(1000)
 HISTORY_FILE = os.path.expanduser("~/.dtcalc_history")
 try:
