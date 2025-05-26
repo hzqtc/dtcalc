@@ -9,6 +9,9 @@ dependencies = []
 [tool.ruff]
 indent-width = 2
 
+[tool.ruff.lint]
+select = ["I"]
+
 [dependency-groups]
 dev = [
     "pytest",

@@ -1,9 +1,10 @@
 #!/opt/homebrew/bin/python3
 
-import re
-import os
-import readline
 import atexit
+import os
+import re
+import readline
+import sys
 from datetime import datetime, timedelta
 
 RESET = "\033[0m"
@@ -124,7 +125,7 @@ def evaluate_expression(expr: str) -> datetime | timedelta:
   for token in tokens:
     if token in ("+", "-"):
       # Consectuive operators are not allowed
-      check_condition(op == None, f"Expecting an operand after operator '{op}'")
+      check_condition(op is None, f"Expecting an operand after operator '{op}'")
       op = token
       continue
 
@@ -133,7 +134,7 @@ def evaluate_expression(expr: str) -> datetime | timedelta:
       if result is None:
         result = dur
       else:
-        check_condition(op, f"Missing operator")
+        check_condition(op, "Missing operator")
         result = result + dur if op == "+" else result - dur
         op = None
       continue
@@ -143,7 +144,7 @@ def evaluate_expression(expr: str) -> datetime | timedelta:
     if result is None:
       result = dt
     else:
-      check_condition(op, f"Missing operator")
+      check_condition(op, "Missing operator")
       if isinstance(result, datetime):
         check_condition(op == "-", "Cannot add two dates.")
         result = result - dt
@@ -153,7 +154,7 @@ def evaluate_expression(expr: str) -> datetime | timedelta:
       op = None
     continue
 
-  check_condition(op == None, "Last token can not be an operator")
+  check_condition(op is None, "Last token can not be an operator")
   check_condition(result, "No operands found")
   return result
 
@@ -161,6 +162,23 @@ def evaluate_expression(expr: str) -> datetime | timedelta:
 # -----------------------
 # Main Loop
 # -----------------------
+def print_help():
+  print(
+    "Usage:\n"
+    "  dtcalc                      # Launch interactive mode\n"
+    '  dtcalc "today + 3d"         # Command-line argument mode\n'
+    '  echo "today + 3d" | dtcalc  # Piped input\n\n'
+    "Expression format:\n"
+    "  [datetime] [+|-] [duration]\n"
+    "  [duration] [+|-] [duration]\n"
+    "  [datetime] - [datetime]\n\n"
+    "Examples:\n"
+    "  today + 5d\n"
+    "  2024-01-01 - 2023-01-01\n"
+    "  now + 3h 15m"
+  )
+
+
 def get_prompt() -> None:
   return f"{LIGHTBLUE}> {RESET}"
 
@@ -200,28 +218,43 @@ def format_timedelta(td: timedelta) -> str:
   return sign + ", ".join(parts) if parts else "0 seconds"
 
 
+def process_expression(input: str) -> str:
+  answer = evaluate_expression(input)
+  # answer maybe one of timedelta (dur +/- dur, dt - dt) or datetime (dt +/- dur)
+  if isinstance(answer, datetime):
+    return format_datetime(answer)
+  elif isinstance(answer, timedelta):
+    return format_timedelta(answer)
+
+
 def main():
+  # Try to get expression from command line or stdin first
+  expr = None
+  if not sys.stdin.isatty():  # Piped input
+    expr = sys.stdin.read().strip()
+  elif len(sys.argv) > 1:  # Command-line arguments
+    expr = " ".join(sys.argv[1:]).strip()
+  # Execute expression if not None, then exit
+  if expr:
+    try:
+      result = process_expression(expr)
+      if result:
+        print(result)
+    except ValueError as e:
+      print(f"Error: {e}", file=sys.stderr)
+    return
+
+  # Enter interactive mode if no expression is provided
   while True:
     try:
       user_input = input(get_prompt()).strip()
       if not user_input:
         continue
       elif user_input == "help":
-        print(
-          "Usage: [operand] [operator] [operand] ([operator] [operand])...\n"
-          "    [operand]: datetime | duration\n"
-          "    [operator]: + | -\n"
-          "    [datetime]: YYYY-MM-DD (HH:MM:SS)\n"
-          "    [duration]: 1w2d3h4m5s"
-        )
+        print_help()
         continue
-
-      answer = evaluate_expression(user_input)
-      # answer maybe one of timedelta (dur +/- dur, dt - dt) or datetime (dt +/- dur)
-      if isinstance(answer, datetime):
-        print_result(format_datetime(answer))
-      elif isinstance(answer, timedelta):
-        print_result(format_timedelta(answer))
+      else:
+        print_result(process_expression(user_input))
     except (EOFError, KeyboardInterrupt):
       print("\n👋 Bye!")
       break
