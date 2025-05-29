@@ -15,13 +15,16 @@ A powerful, interactive command-line tool for performing natural and flexible da
   - `2years 3days`
   - `1y6mo10d`
   - `5w3d2h`
+- 💻 Take expression from argument or stdin
+  - `dtcalc "today + 100d"`
+  - `echo "now + 8h" | dtcalc`
 - ⌨️ Interactive prompt with:
   - Command history navigation (↑ / ↓)
   - Persistent history across sessions
 
 ---
 
-## 🚀 Installation
+## 🚀 Setup
 
 ### 1. Clone the repo
 
