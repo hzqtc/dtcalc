@@ -53,7 +53,7 @@ def check_condition(condition, message):
 # -----------------------
 # Duration Parsing
 # -----------------------
-def parse_duration(s: str) -> timedelta:
+def parse_duration(s: str) -> timedelta | None:
   # Normalize unit names, with "weeks" mapped to "days"
   unit_map = {
     "w": "days",
@@ -99,7 +99,7 @@ def parse_duration(s: str) -> timedelta:
 # -----------------------
 # Datetime Parsing
 # -----------------------
-def parse_datetime_safe(s: str) -> datetime:
+def parse_datetime_safe(s: str) -> datetime | None:
   if s.lower() == "today":
     return datetime.today().replace(hour=0, minute=0, second=0, microsecond=0)
   elif s.lower() == "now":
@@ -197,15 +197,15 @@ def print_help():
   )
 
 
-def get_prompt() -> None:
+def get_prompt() -> str:
   return f"{LIGHTBLUE}> {RESET}"
 
 
-def print_result(result) -> str:
+def print_result(result) -> None:
   print(f"{LIGHTBLUE}= {RESET}{result}")
 
 
-def print_error(result) -> str:
+def print_error(result) -> None:
   print(f"{RED}! {RESET}{result}")
 
 
