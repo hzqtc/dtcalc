@@ -255,9 +255,7 @@ def main():
   # Execute expression if not None, then exit
   if expr:
     try:
-      result = process_expression(expr)
-      if result:
-        print(result)
+      [print(result) for exp in expr.splitlines() if (result := process_expression(exp))]
     except ValueError as e:
       print(f"Error: {e}", file=sys.stderr)
     return
