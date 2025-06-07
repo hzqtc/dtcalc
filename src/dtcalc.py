@@ -142,7 +142,7 @@ def evaluate_expression(expr: str) -> datetime | timedelta:
 
   for token in tokens:
     if token in ("+", "-"):
-      # Consectuive operators are not allowed
+      # Consecutive operators are not allowed
       check_condition(op is None, f"Expecting an operand after operator '{op}'")
       op = token
       continue
@@ -255,7 +255,12 @@ def main():
   # Execute expression if not None, then exit
   if expr:
     try:
-      [print(result) for exp in expr.splitlines() if (result := process_expression(exp))]
+      # Include the expression in output when not in interactive mode
+      [
+          print(f"{fexp} = {result}")
+          for exp in expr.splitlines()
+          if (fexp := re.sub(r'\s+', ' ', exp).strip()) and (result := process_expression(fexp))
+      ]
     except ValueError as e:
       print(f"Error: {e}", file=sys.stderr)
     return
