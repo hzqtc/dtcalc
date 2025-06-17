@@ -257,9 +257,10 @@ def main():
     try:
       # Include the expression in output when not in interactive mode
       [
-          print(f"{fexp} = {result}")
-          for exp in expr.splitlines()
-          if (fexp := re.sub(r'\s+', ' ', exp).strip()) and (result := process_expression(fexp))
+        print(f"{fexp} = {result}")
+        for exp in expr.splitlines()
+        if (fexp := re.sub(r"\s+", " ", exp).strip())
+        and (result := process_expression(fexp))
       ]
     except ValueError as e:
       print(f"Error: {e}", file=sys.stderr)
